@@ -6,12 +6,37 @@ var connection = mysql.createConnection({
     port: 3306,
     user: "root",
     password: "rootroot",
-    dadabase: "bamazon"
-
+    database: "bamazon"
 });
 
 connection.connect(function (err) {
     if (err) throw err;
+
     console.log("connected as id " + connection.threadId);
-    connection.end();
-})
+    afterConnection();
+});
+
+function afterConnection() {
+    connection.query("SELECT * FROM productsTable", function (err, response) {
+        if (err) throw err;
+        console.log(response);
+        connection.end();
+    });
+}
+
+function chooseProduct() {
+    inquirer
+        .prompt({
+            name: "type",
+            type: "selection",
+            message: "Choose the ID of the product you would like to buy."
+        })
+}
+function chooseQuantity() {
+    inquirer
+        .prompt({
+            name: "type",
+            type: "quantity",
+            message: "How many would you would like to buy?"
+        })
+}
