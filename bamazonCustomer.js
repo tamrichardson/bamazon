@@ -17,26 +17,58 @@ connection.connect(function (err) {
 });
 
 function afterConnection() {
-    connection.query("SELECT * FROM productsTable", function (err, response) {
-        if (err) throw err;
-        console.log(response);
-        connection.end();
-    });
+
+    inquirer.prompt({
+        type: "list",
+        name: "userOptions",
+        message: "What would you like to do?",
+        choices: ["View products", "Make a purchase", "Exit"]
+
+    }).then(function (response) {
+        console.log(response.userOptions)
+        if (response.userOptions === "View products") {
+            console.table(response)
+            connection.query("SELECT * FROM productsTable", function (err, response) {
+                if (err) throw err;
+                console.table(response);
+                afterConnection()
+
+            });
+        } else if (response.userOptions === "Make a purchase") {
+            chooseProduct()
+
+        }
+    })
 }
 
 function chooseProduct() {
-    inquirer
-        .prompt({
-            name: "type",
-            type: "selection",
-            message: "Choose the ID of the product you would like to buy."
-        })
+    connection.query("SELECT item_id, product_name FROM productsTable", function (err, response) {
+        // console.table(response);
+        // console.log(typeof (response))
+        var idArray = []
+        for (var i = 0; i < response.length; i++) {
+            // console.log(response[i].item_id);
+            idArray.push(response[i].item_id)
+        }
+        console.log(idArray)
+
+        inquirer
+            .prompt({
+                type: "list",
+                name: "selection",
+                message: "Choose the ID of the product you would like to buy.",
+                choices: idArray
+
+            })
+    })
+
 }
 function chooseQuantity() {
     inquirer
         .prompt({
-            name: "type",
-            type: "quantity",
+            type: "input",
+            name: "quantity",
             message: "How many would you would like to buy?"
+
         })
 }
