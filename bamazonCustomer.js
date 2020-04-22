@@ -35,11 +35,13 @@ function afterConnection() {
                 afterConnection();
             });
         } if (response.userOptions === "Make a purchase") {
-            console.table(response);
+
             choose();
         } if (response.userOptions === "Sell a product") {
+
             sell();
         } if (response.userOptions === "Exit") {
+
             exit();
         }
     })
@@ -47,8 +49,8 @@ function afterConnection() {
 
 
 function choose() {
-    connection.query('SELECT item_id, product_name FROM productsTable', function (err, response) {
-        // console.table(response);
+    connection.query('SELECT * FROM productsTable', function (err, response) {
+        console.table(response);
         // console.log(typeof (response))
         var idArray = [];
         for (var i = 0; i < response.length; i++) {
@@ -101,7 +103,8 @@ function choose() {
 };
 
 function sell() {
-    connection.query('SELECT item_id, product_name FROM productsTable', function (err, response) {
+    connection.query('SELECT * FROM productsTable', function (err, response) {
+        console.table(response);
         var idArray = [];
         for (var i = 0; i < response.length; i++) {
 
@@ -128,8 +131,8 @@ function sell() {
                     if (err)
                         throw err;
                     if (inquirerResponse.quantity > res[0].stock_quantity) {
-                        console.log("Insufficient quantity")
-
+                        console.log("Insufficient quantity");
+                        afterConnection();
                     } else {
                         var total = res[0].price * inquirerResponse.quantity;
                         console.log("Your total cash back is: $" + total);
