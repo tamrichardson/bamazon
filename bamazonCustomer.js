@@ -26,7 +26,7 @@ function afterConnection() {
         type: "list",
         name: "userOptions",
         message: "What would you like to do?",
-        choices: ["View products", "Make a purchase", "Exit"]
+        choices: ["View products", "Make a purchase", "Sell a product", "Exit"]
 
     }).then(function (response) {
         console.log(response.userOptions)
@@ -35,14 +35,16 @@ function afterConnection() {
             connection.query("SELECT * FROM productsTable", function (err, response) {
                 if (err) throw err;
                 console.table(response);
-                afterConnection()
+                afterConnection();
             });
         } if (response.userOptions === "Make a purchase") {
             console.table(response);
-            choose()
+            choose();
             //chooseQuantity()
+        } if (response.userOptions === "Sell a product") {
+            sell();
         } if (response.userOptions === "Exit") {
-            exit()
+            exit();
         }
     })
 }
@@ -56,7 +58,7 @@ function choose() {
             // console.log(response[i].item_id);
             idArray.push(response[i].item_id);
         }
-        console.log(idArray);
+        //console.log(idArray);
         inquirer
             .prompt([
                 {
@@ -73,6 +75,36 @@ function choose() {
             ])
             .then(function (response) {
                 console.log('You chose ID#: ' + response.selection + ' and you want: ' + response.quantity + '.');
+            });
+    });
+}
+
+function sell() {
+    connection.query('SELECT item_id, product_name FROM productsTable', function (err, response) {
+        // console.table(response);
+        // console.log(typeof (response))
+        var idArray = [];
+        for (var i = 0; i < response.length; i++) {
+            // console.log(response[i].item_id);
+            idArray.push(response[i].item_id);
+        }
+        //console.log(idArray);
+        inquirer
+            .prompt([
+                {
+                    type: 'list',
+                    name: 'selection',
+                    message: 'Choose the ID of the product you would like to sell.',
+                    choices: idArray,
+                },
+                {
+                    type: 'input',
+                    name: 'quantity',
+                    message: 'How many would you would like to sell?',
+                },
+            ])
+            .then(function (response) {
+                console.log('You chose ID#: ' + response.selection + ' and you want sell: ' + response.quantity + '.');
             });
     });
 }
