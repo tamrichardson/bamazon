@@ -18,6 +18,8 @@
   },
   "homepage": "https://github.com/tamrichardson/bamazon#readme",
   "dependencies": {
+    "chalk": "^4.0.0",
+    "cli-table2": "^0.2.0",
     "inquirer": "^7.1.0",
     "mysql": "^2.18.1"
   }

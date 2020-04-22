@@ -1,5 +1,6 @@
 var mysql = require("mysql");
 var inquirer = require("inquirer");
+var chalk = require("chalk");
 
 var connection = mysql.createConnection({
     host: "localhost",
@@ -12,9 +13,12 @@ var connection = mysql.createConnection({
 connection.connect(function (err) {
     if (err) throw err;
 
-    console.log("connected as id " + connection.threadId);
+    //console.log("connected as id " + connection.threadId);
     afterConnection();
 });
+console.log(chalk.magenta("************************************\n"));
+console.log(chalk.green("WELCOME TO THE BAMAZON SUPERSTORE"));
+console.log(chalk.magenta("\n************************************\n"));
 
 function afterConnection() {
 
@@ -32,43 +36,59 @@ function afterConnection() {
                 if (err) throw err;
                 console.table(response);
                 afterConnection()
-
             });
-        } else if (response.userOptions === "Make a purchase") {
-            chooseProduct()
-
+        } if (response.userOptions === "Make a purchase") {
+            console.table(response);
+            choose()
+            //chooseQuantity()
+        } if (response.userOptions === "Exit") {
+            exit()
         }
     })
 }
 
-function chooseProduct() {
-    connection.query("SELECT item_id, product_name FROM productsTable", function (err, response) {
+function choose() {
+    connection.query('SELECT item_id, product_name FROM productsTable', function (err, response) {
         // console.table(response);
         // console.log(typeof (response))
-        var idArray = []
+        var idArray = [];
         for (var i = 0; i < response.length; i++) {
             // console.log(response[i].item_id);
-            idArray.push(response[i].item_id)
+            idArray.push(response[i].item_id);
         }
-        console.log(idArray)
-
+        console.log(idArray);
         inquirer
-            .prompt({
-                type: "list",
-                name: "selection",
-                message: "Choose the ID of the product you would like to buy.",
-                choices: idArray
-
-            })
-    })
-
+            .prompt([
+                {
+                    type: 'list',
+                    name: 'selection',
+                    message: 'Choose the ID of the product you would like to buy.',
+                    choices: idArray,
+                },
+                {
+                    type: 'input',
+                    name: 'quantity',
+                    message: 'How many would you would like to buy?',
+                },
+            ])
+            .then(function (response) {
+                console.log('You chose ID#: ' + response.selection + ' and you want: ' + response.quantity + '.');
+            });
+    });
 }
-function chooseQuantity() {
+
+function exit() {
     inquirer
         .prompt({
-            type: "input",
-            name: "quantity",
-            message: "How many would you would like to buy?"
-
+            type: "confirm",
+            name: "quit",
+            message: "Would you like to exit Bamazon?",
+        }
+        ).then(function (response) {
+            if (response.quit === false) {
+                afterConnection();
+            } else {
+                connection.end();
+            }
         })
 }
