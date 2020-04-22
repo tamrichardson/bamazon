@@ -76,22 +76,24 @@ function choose() {
                 connection.query(query, [inquirerResponse.selection], function (err, res) {
                     if (err)
                         throw err;
-                    if (inquirerResponse.quantity > res.stock_quantity) {
+                    if (inquirerResponse.quantity > res[0].stock_quantity) {
                         console.log("Insufficient quantity")
+
                     } else {
-                        var total = res.price * inquirerResponse.quantity;
+                        var total = res[0].price * inquirerResponse.quantity;
                         console.log("Your total is: $" + total);
-                        var newQuantity = res.stock_quantity - parseInt(inquirerResponse.quantity);
+                        var newQuantity = res[0].stock_quantity - parseInt(inquirerResponse.quantity);
                         connection.query("UPDATE productsTable SET ? WHERE ?", [
                             {
                                 stock_quantity: newQuantity
                             },
                             {
-                                item_id: response.selection
+                                item_id: inquirerResponse.selection
                             }
                         ],
 
                         )
+                        afterConnection();
                     }
                 })
             })
@@ -119,12 +121,35 @@ function sell() {
                     message: 'How many would you would like to sell?',
                 },
             ])
-            .then(function (response) {
-                console.log('You chose ID#: ' + response.selection + ' and you want to sell: ' + response.quantity + '.');
+            .then(function (inquirerResponse) {
+                console.log('You chose ID#: ' + inquirerResponse.selection + ' and you want to sell: ' + inquirerResponse.quantity + '.');
+                var query = "SELECT * from productsTable WHERE item_id=?";
+                connection.query(query, [inquirerResponse.selection], function (err, res) {
+                    if (err)
+                        throw err;
+                    if (inquirerResponse.quantity > res[0].stock_quantity) {
+                        console.log("Insufficient quantity")
 
-            });
+                    } else {
+                        var total = res[0].price * inquirerResponse.quantity;
+                        console.log("Your total cash back is: $" + total);
+                        var newQuantity = res[0].stock_quantity + parseInt(inquirerResponse.quantity);
+                        connection.query("UPDATE productsTable SET ? WHERE ?", [
+                            {
+                                stock_quantity: newQuantity
+                            },
+                            {
+                                item_id: inquirerResponse.selection
+                            }
+                        ],
+
+                        )
+                    } afterConnection();
+                })
+            })
     })
-}
+};
+
 function exit() {
     inquirer
         .prompt({
