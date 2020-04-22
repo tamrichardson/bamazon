@@ -43,98 +43,101 @@ function afterConnection() {
             exit();
         }
     })
+}
 
-    function choose() {
-        connection.query('SELECT item_id, product_name FROM productsTable', function (err, response) {
-            // console.table(response);
-            // console.log(typeof (response))
-            var idArray = [];
-            for (var i = 0; i < response.length; i++) {
-                // console.log(response[i].item_id);
-                idArray.push(response[i].item_id);
-            }
-            //console.log(idArray);
-            inquirer
-                .prompt([
-                    {
-                        type: 'list',
-                        name: 'selection',
-                        message: 'Choose the ID of the product you would like to buy.',
-                        choices: idArray,
-                    },
-                    {
-                        type: 'input',
-                        name: 'quantity',
-                        message: 'How many would you would like to buy?',
-                    },
-                ])
-                .then(function (response) {
-                    console.log('You chose ID#: ' + response.selection + ' and you want: ' + response.quantity + '.');
-                    var query = "SELECT * from productsTable WHERE item_id=?";
-                    connection.query(query, [response.selection], function (err, res) {
-                        if (err)
-                            throw err;
-                        if (response.quantity > response.stock_quantity) {
-                            console.log("Sorry! Only " + response.stock_quantity + " in stock.")
-                        } else {
-                            var sales = response.price * response.quantity;
-                            console.log("Your total is: $" + sales);
-                            var newQuantity = response.stock_quantity - parseInt(response.quantity);
-                            connection.query("UPDATE quantity SET ? WHERE ?", [
-                                {
-                                    stock_quantity: newQuantity
-                                },
-                                {
-                                    item_id: response.selection
-                                }
-                            ],
 
-                            )
-                        }
-                    });
-
-                    function sell() {
-                        connection.query('SELECT item_id, product_name FROM productsTable', function (err, response) {
-                            // console.table(response);
-                            // console.log(typeof (response))
-                            var idArray = [];
-                            for (var i = 0; i < response.length; i++) {
-                                // console.log(response[i].item_id);
-                                idArray.push(response[i].item_id);
+function choose() {
+    connection.query('SELECT item_id, product_name FROM productsTable', function (err, response) {
+        // console.table(response);
+        // console.log(typeof (response))
+        var idArray = [];
+        for (var i = 0; i < response.length; i++) {
+            // console.log(response[i].item_id);
+            idArray.push(response[i].item_id);
+        }
+        //console.log(idArray);
+        inquirer
+            .prompt([
+                {
+                    type: 'list',
+                    name: 'selection',
+                    message: 'Choose the ID of the product you would like to buy.',
+                    choices: idArray,
+                },
+                {
+                    type: 'input',
+                    name: 'quantity',
+                    message: 'How many would you would like to buy?',
+                },
+            ])
+            .then(function (inquirerResponse) {
+                console.log('You chose ID#: ' + inquirerResponse.selection + ' and you want: ' + inquirerResponse.quantity + '.');
+                var query = "SELECT * from productsTable WHERE item_id=?";
+                connection.query(query, [inquirerResponse.selection], function (err, res) {
+                    if (err)
+                        throw err;
+                    if (inquirerResponse.quantity > res.stock_quantity) {
+                        console.log("Insufficient quantity")
+                    } else {
+                        var total = res.price * inquirerResponse.quantity;
+                        console.log("Your total is: $" + total);
+                        var newQuantity = res.stock_quantity - parseInt(inquirerResponse.quantity);
+                        connection.query("UPDATE productsTable SET ? WHERE ?", [
+                            {
+                                stock_quantity: newQuantity
+                            },
+                            {
+                                item_id: response.selection
                             }
-                            //console.log(idArray);
-                            inquirer
-                                .prompt([
-                                    {
-                                        type: 'list',
-                                        name: 'selection',
-                                        message: 'Choose the ID of the product you would like to sell.',
-                                        choices: idArray,
-                                    },
-                                    {
-                                        type: 'input',
-                                        name: 'quantity',
-                                        message: 'How many would you would like to sell?',
-                                    },
-                                ])
-                                .then(function (response) {
-                                    console.log('You chose ID#: ' + response.selection + ' and you want to sell: ' + response.quantity + '.');
+                        ],
 
-                                });
-                        })
-                        function exit() {
-                            inquirer
-                                .prompt({
-                                    type: "confirm",
-                                    name: "quit",
-                                    message: "Would you like to exit Bamazon?",
-                                }
-                                ).then(function (response) {
-                                    if (response.quit === false) {
-                                        afterConnection();
-                                    } else {
-                                        connection.end();
-                                    }
-                                })
-                        }
+                        )
+                    }
+                })
+            })
+    })
+};
+
+function sell() {
+    connection.query('SELECT item_id, product_name FROM productsTable', function (err, response) {
+        var idArray = [];
+        for (var i = 0; i < response.length; i++) {
+
+            idArray.push(response[i].item_id);
+        }
+        inquirer
+            .prompt([
+                {
+                    type: 'list',
+                    name: 'selection',
+                    message: 'Choose the ID of the product you would like to sell.',
+                    choices: idArray,
+                },
+                {
+                    type: 'input',
+                    name: 'quantity',
+                    message: 'How many would you would like to sell?',
+                },
+            ])
+            .then(function (response) {
+                console.log('You chose ID#: ' + response.selection + ' and you want to sell: ' + response.quantity + '.');
+
+            });
+    })
+}
+function exit() {
+    inquirer
+        .prompt({
+            type: "confirm",
+            name: "quit",
+            message: "Would you like to exit Bamazon?",
+        }
+        ).then(function (response) {
+            if (response.quit === false) {
+                afterConnection();
+            } else {
+                connection.end();
+            }
+        })
+}
 
