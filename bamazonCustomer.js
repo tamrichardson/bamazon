@@ -34,6 +34,7 @@ function afterConnection() {
                 console.table(response);
                 afterConnection();
             });
+
         } if (response.userOptions === "Make a purchase") {
 
             choose();
@@ -80,7 +81,7 @@ function choose() {
                         throw err;
                     if (inquirerResponse.quantity > res[0].stock_quantity) {
                         console.log("Insufficient quantity")
-
+                        afterConnection();
                     } else {
                         var total = res[0].price * inquirerResponse.quantity;
                         console.log("Your total is: $" + total);
@@ -130,10 +131,8 @@ function sell() {
                 connection.query(query, [inquirerResponse.selection], function (err, res) {
                     if (err)
                         throw err;
-                    if (inquirerResponse.quantity > res[0].stock_quantity) {
-                        console.log("Insufficient quantity");
-                        afterConnection();
-                    } else {
+
+                    else {
                         var total = res[0].price * inquirerResponse.quantity;
                         console.log("Your total cash back is: $" + total);
                         var newQuantity = res[0].stock_quantity + parseInt(inquirerResponse.quantity);
